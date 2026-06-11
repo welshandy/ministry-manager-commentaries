@@ -1,0 +1,33 @@
+name: Build Nestle 1904 Greek NT Translation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build NT1904.SQLite3
+        run: |
+          mkdir -p scripts/output
+          python3 scripts/build_nestle1904.py
+
+      - name: Upload to translations-v1 release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload translations-v1 \
+            scripts/output/NT1904.SQLite3 \
+            --clobber
+          echo "Uploaded NT1904.SQLite3 ($(du -h scripts/output/NT1904.SQLite3 | cut -f1))"
